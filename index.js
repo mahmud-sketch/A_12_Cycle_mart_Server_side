@@ -24,7 +24,7 @@ async function run() {
         const cycleOrdersCollection = cycleOrderDatabase.collection("allCycleOrders");
 
         const riviewDatabase = client.db("riviews");
-        const riviewsCollection = cycleOrderDatabase.collection("allriviews");
+        const riviewsCollection = riviewDatabase.collection("allriviews");
 
         //get api
         app.get('/allcycles', async (req, res) => {
@@ -36,9 +36,19 @@ async function run() {
 
         app.get('/allcycles/:id', async (req, res) => {
             const id = req.params.id;
+
             const query = { _id: ObjectId(id) };
+
             const cycle = await cycleCollection.findOne(query);
+            // console.log(cycle);
             res.send(cycle);
+        })
+
+        app.get('/reviews', async (req, res) => {
+            const cursor = riviewsCollection.find({});
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+
         })
 
         // app.get('/update/:id', async (req, res) => {
@@ -49,13 +59,22 @@ async function run() {
         // })
 
 
-        // // post api
+        // order post api
 
         app.post('/orders', async (req, res) => {
             const order = req.body;
-            console.log(order);
+            // console.log(order);
             const result = await cycleOrdersCollection.insertOne(order);
-            console.log('hitting the post', order);
+            res.json(result);
+        })
+
+
+        // review post api
+
+        app.post('/reviews', async (req, res) => {
+            const review = req.body;
+            // console.log(review);
+            const result = await riviewsCollection.insertOne(review);
             res.json(result);
         })
 
@@ -66,27 +85,27 @@ async function run() {
         //     res.send(result);
         // })
 
-        // app.get('/orders', async (req, res) => {
-        //     // console.log(req.query);
-        //     const search = req.query.email;
-        //     const cursor = ordersCollection.find({});
-        //     const orders = await cursor.toArray();
-        //     if (search) {
-        //         const searchResult = orders.filter(order => order.email.includes(search));
-        //         res.send(searchResult);
-        //     } else {
-        //         res.send(orders);
-        //     }
-        // })
+        app.get('/orders', async (req, res) => {
+            // console.log(req.query);
+            const search = req.query.email;
+            const cursor = cycleOrdersCollection.find({});
+            const orders = await cursor.toArray();
+            if (search) {
+                const searchResult = orders.filter(order => order.email.includes(search));
+                res.send(searchResult);
+            } else {
+                res.send(orders);
+            }
+        })
 
         // //delete api
 
-        // app.delete('/rides/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const result = await ordersCollection.deleteOne(query);
-        //     res.send(result);
-        // })
+        app.delete('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await cycleOrdersCollection.deleteOne(query);
+            res.send(result);
+        })
 
         // // update api
         // app.put('/update/:id', async (req, res) => {

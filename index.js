@@ -26,6 +26,9 @@ async function run() {
         const riviewDatabase = client.db("riviews");
         const riviewsCollection = riviewDatabase.collection("allriviews");
 
+        const usersDatabase = client.db("users");
+        const usersCollection = usersDatabase.collection("allusers");
+
         //get api
         app.get('/allcycles', async (req, res) => {
             // console.log(req.query);
@@ -67,6 +70,26 @@ async function run() {
             const result = await cycleOrdersCollection.insertOne(order);
             res.json(result);
         })
+
+        // user post api
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            // console.log(order);
+            const result = await usersCollection.insertOne(user);
+            res.json(result);
+        })
+
+        // user put api
+
+        app.put('/users', async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email };
+            const options = { upsert: true };
+            const updateDoc = { $set: user }
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            res.json(result);
+        })
+
 
 
         // review post api

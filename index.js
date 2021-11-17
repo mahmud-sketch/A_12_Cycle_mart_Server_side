@@ -47,6 +47,33 @@ async function run() {
             res.send(cycle);
         })
 
+        // get admin
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            // console.log(cycle);
+            let isAdmin = false;
+            console.log(user);
+            if (user) {
+                if (user.role) {
+                    if (user.role === 'admin') {
+                        isAdmin = true;
+                    }
+                }
+            }
+            res.send({ admin: isAdmin });
+        })
+
+
+        app.get('/update/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const order = await cycleOrdersCollection.findOne(query);
+            res.send(order);
+        })
+
+
         app.get('/reviews', async (req, res) => {
             const cursor = riviewsCollection.find({});
             const reviews = await cursor.toArray();
@@ -54,12 +81,7 @@ async function run() {
 
         })
 
-        // app.get('/update/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const order = await ordersCollection.findOne(query);
-        //     res.send(order);
-        // })
+
 
 
         // order post api
@@ -90,6 +112,14 @@ async function run() {
             res.json(result);
         })
 
+        app.put('/users/admin', async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email };
+            const updateDoc = { $set: { role: 'admin' } };
+            const result = await usersCollection.updateOne(filter, updateDoc);
+            res.json(result);
+        })
+
 
 
         // review post api
@@ -101,16 +131,19 @@ async function run() {
             res.json(result);
         })
 
-        // app.post('/allrides', async (req, res) => {
-        //     const ride = req.body;
-        //     const result = await ridesCollection.insertOne(ride);
-        //     // console.log('hitting the post', service);
-        //     res.send(result);
-        // })
+        app.post('/products', async (req, res) => {
+            const product = req.body;
+            const result = await cycleCollection.insertOne(product);
+            // console.log('hitting the post', service);
+            res.send(result);
+        })
 
-        app.get('/orders', async (req, res) => {
+
+
+        app.get('/orders/user', async (req, res) => {
             // console.log(req.query);
             const search = req.query.email;
+            console.log(req.query.email);
             const cursor = cycleOrdersCollection.find({});
             const orders = await cursor.toArray();
             if (search) {
@@ -121,6 +154,14 @@ async function run() {
             }
         })
 
+        app.get('/orders', async (req, res) => {
+            // console.log(req.query);
+            const cursor = cycleOrdersCollection.find({});
+            const orders = await cursor.toArray();
+            res.send(orders);
+        })
+
+
         // //delete api
 
         app.delete('/orders/:id', async (req, res) => {
@@ -130,24 +171,41 @@ async function run() {
             res.send(result);
         })
 
-        // // update api
-        // app.put('/update/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const updatedOrder = req.body;
-        //     const filter = { _id: ObjectId(id) };
-        //     const options = { upsert: true };
-        //     const updateDoc = {
-        //         $set: {
-        //             name: updatedOrder.name,
-        //             email: updatedOrder.email,
-        //             cost: updatedOrder.cost,
-        //             rideName: updatedOrder.rideName,
-        //             status: updatedOrder.status
-        //         },
-        //     };
-        //     const result = await ordersCollection.updateOne(filter, updateDoc, options);
-        //     res.send(result);
-        // })
+        app.delete('/allcycles/:id', async (req, res) => {
+
+            const id = req.params.id;
+            console.log(id);
+            const query = { _id: ObjectId(id) };
+            const result = await cycleCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        // update api
+        app.put('/update/:id', async (req, res) => {
+            const id = req.params.id;
+            const updatedOrder = req.body;
+            console.log(updatedOrder.cycleName);
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    cycleName: updatedOrder.cycleName,
+                    productId: updatedOrder.productId,
+                    cost: updatedOrder.cost,
+                    info: updatedOrder.info,
+                    img: updatedOrder.img,
+                    name: updatedOrder.name,
+                    email: updatedOrder.email,
+                    address: updatedOrder.address,
+                    paymentMethod: updatedOrder.paymentMethod,
+                    status: updatedOrder.status
+                },
+            };
+
+
+            const result = await cycleOrdersCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
     }
     finally {
         // await client.close();

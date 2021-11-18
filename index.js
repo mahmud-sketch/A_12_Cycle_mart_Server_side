@@ -54,7 +54,7 @@ async function run() {
             const user = await usersCollection.findOne(query);
             // console.log(cycle);
             let isAdmin = false;
-            console.log(user);
+            // console.log(user);
             if (user) {
                 if (user.role) {
                     if (user.role === 'admin') {
@@ -143,7 +143,7 @@ async function run() {
         app.get('/orders/user', async (req, res) => {
             // console.log(req.query);
             const search = req.query.email;
-            console.log(req.query.email);
+            // console.log(req.query.email);
             const cursor = cycleOrdersCollection.find({});
             const orders = await cursor.toArray();
             if (search) {
@@ -164,6 +164,13 @@ async function run() {
 
         // //delete api
 
+        app.delete('/orders/user/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await cycleOrdersCollection.deleteOne(query);
+            res.send(result);
+        })
+
         app.delete('/orders/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -171,10 +178,11 @@ async function run() {
             res.send(result);
         })
 
+
         app.delete('/allcycles/:id', async (req, res) => {
 
             const id = req.params.id;
-            console.log(id);
+            // console.log(id);
             const query = { _id: ObjectId(id) };
             const result = await cycleCollection.deleteOne(query);
             res.send(result);
@@ -182,30 +190,21 @@ async function run() {
 
         // update api
         app.put('/update/:id', async (req, res) => {
-            const id = req.params.id;
-            const updatedOrder = req.body;
-            console.log(updatedOrder.cycleName);
+            const id = req.body;
+            console.log(id);
+            // const updatedOrder = req.body;
+            // console.log(updatedOrder.cycleName);
             const filter = { _id: ObjectId(id) };
-            const options = { upsert: true };
+            // const options = { upsert: true };
             const updateDoc = {
                 $set: {
-                    cycleName: updatedOrder.cycleName,
-                    productId: updatedOrder.productId,
-                    cost: updatedOrder.cost,
-                    info: updatedOrder.info,
-                    img: updatedOrder.img,
-                    name: updatedOrder.name,
-                    email: updatedOrder.email,
-                    address: updatedOrder.address,
-                    paymentMethod: updatedOrder.paymentMethod,
-                    status: updatedOrder.status
+                    status: "shipped"
                 },
             };
-
-
-            const result = await cycleOrdersCollection.updateOne(filter, updateDoc, options);
+            const result = await cycleOrdersCollection.updateOne(filter, updateDoc);
             res.send(result);
         })
+
     }
     finally {
         // await client.close();
